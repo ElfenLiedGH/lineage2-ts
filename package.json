@@ -1,0 +1,43 @@
+{
+  "name": "lineage2js",
+  "version": "1.0.0",
+  "description": "Server for Lineage 2 Chronicle 1 Harbingers of War",
+  "main": "null",
+  "scripts": {
+    "generateClasses:build": "tsc --project tsconfig-data-sets.json",
+    "generateClasses:start": "cross-env DEBUG=* node ./data-sets-build/loaders/generateClasses.js",
+    "gameserver:build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "gameServer:start": "cross-env DEBUG=* NODE_OPTIONS=--enable-source-maps node ./game-server-build/gameserver.js",
+    "loginServer:start": "cross-env DEBUG=* node ./loginserver.js",
+    "server:start": "npm-run-all --parallel gameServer:start loginServer:start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lineage2js/lineage2js.git"
+  },
+  "keywords": [
+    "lineage2"
+  ],
+  "author": "space2pacman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lineage2js/lineage2js/issues"
+  },
+  "homepage": "https://github.com/lineage2js/lineage2js#readme",
+  "dependencies": {
+    "debug": "^4.3.4",
+    "lodash": "^4.17.21",
+    "lowdb": "^1.0.0",
+    "typescript": "^4.8.2"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.7",
+    "@types/lowdb": "^1.0.11",
+    "@types/node": "^18.7.14",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.0.2",
+    "npm-run-all": "^4.1.5",
+    "tsc-alias": "^1.7.0"
+  }
+}

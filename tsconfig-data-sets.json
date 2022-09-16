@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "data-sets-build"
+  },
+  "files": ["./dataSets/loaders/generateClasses.ts"]
+}

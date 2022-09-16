@@ -1,0 +1,8 @@
+node_modules
+log.txt
+package-lock.json
+/.idea/
+/data-sets-build/
+/dataSets/generated/
+/game-server-build/
+/.env
