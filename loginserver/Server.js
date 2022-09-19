@@ -1,5 +1,4 @@
 let net = require("net");
-let {log} = require("./../util/log");
 let Blowfish = require("./../util/blowfish");
 let config = require("./../config/config");
 let serverPackets = require("./serverpackets/serverPackets");
@@ -9,6 +8,8 @@ let FileSync = require("lowdb/adapters/FileSync");
 let database = new FileSync("data/database.json");
 let db = low(database);
 
+let debug = require('debug');
+const log = debug('login-server:server')
 class Server {
 	constructor() {
 		this.db = db;

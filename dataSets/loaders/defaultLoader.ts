@@ -12,7 +12,7 @@ export class DefaultLoader implements DataLoader<Map<string, string[][]>> {
   constructor(private fileName: string) {
   }
 
-  public parse(removeSuffix = '') {
+  public parse(removeSuffix = '', addUniqName = false) {
     const data = FileLoader.getData([...path, this.fileName]);
     const dataMap: Map<string, string[][]> = new Map();
     let parameterName = '';
@@ -26,7 +26,7 @@ export class DefaultLoader implements DataLoader<Map<string, string[][]>> {
             parameterName = parameterName.replace(removeSuffix, '')
           }
         } else if (line.search('_end') !== -1) {
-          dataMap.set(parameterName, dataTable)
+          dataMap.set(addUniqName ? `${Math.random()}_${parameterName}` : parameterName, dataTable)
           parameterName = '';
           dataTable = [];
         } else if (parameterName) {

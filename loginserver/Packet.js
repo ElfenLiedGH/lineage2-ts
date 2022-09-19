@@ -1,7 +1,6 @@
-let {log} = require("./../util/log");
-let config = require("./../config/config");
+const debug = require( 'debug');
 let clientPackets = require("./../loginserver/clientpackets/clientPackets");
-
+const log = debug('login-server:packet')
 class Packet {
 	constructor(player) {
 		this._player = player;

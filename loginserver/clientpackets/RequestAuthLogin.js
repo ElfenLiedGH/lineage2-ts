@@ -1,7 +1,7 @@
-let {log} = require("./../../util/log");
+let debug = require("debug");
 let serverPackets = require("./../../loginserver/serverpackets/serverPackets");
 let ClientPacket = require("./ClientPacket");
-
+const log = debug('login-server:RequestAuthLogin')
 class RequestAuthLogin {
 	constructor(packet, player) {
 		this._packet = packet;

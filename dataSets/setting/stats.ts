@@ -1,6 +1,5 @@
 import assert from "assert";
 import {DefaultLoader} from "../loaders/defaultLoader";
-import {ClassTypes} from "../generated/manual/classTypes";
 
 export enum StatTypes {
   INT,

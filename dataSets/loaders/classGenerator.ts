@@ -37,14 +37,14 @@ export abstract class ClassGenerator<T> {
     })
   }
 
-  public generateClasses(prefix = '') {
-    this.log(`generation started`);
+  public async generateClasses(prefix = '') {
+    this.log(`generation ${this.constructor.name} started`);
     for (const [className, entries] of this.getIterator()) {
       const adaptiveClassName = this.camelCase(prefix+this.capitalize(className));
       const data = this.generateClass(this.capitalize(adaptiveClassName), entries);
-      this.saveToFile(`${adaptiveClassName}.ts`, data)
+      await this.saveToFile(`${adaptiveClassName}.ts`, data)
     }
-    this.log(`generation finished`);
+    this.log(`generation ${this.constructor.name} finished`);
   }
 
   protected abstract getIterator(): Map<string, T>

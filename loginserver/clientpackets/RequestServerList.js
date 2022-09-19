@@ -1,8 +1,7 @@
-let log = require("./../../util/log");
+
 let serverPackets = require("./../../loginserver/serverpackets/serverPackets");
 let config = require("./../../config/config");
 let ClientPacket = require("./ClientPacket");
-
 class RequestServerList {
 	constructor(packet, player) {
 		this._packet = packet;

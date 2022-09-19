@@ -7,7 +7,7 @@
     "generateClasses:build": "tsc --project tsconfig-data-sets.json",
     "generateClasses:start": "cross-env DEBUG=* node ./data-sets-build/loaders/generateClasses.js",
     "gameserver:build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
-    "gameServer:start": "cross-env DEBUG=* NODE_OPTIONS=--enable-source-maps node ./game-server-build/gameserver.js",
+    "gameServer:start": "cross-env DEBUG=* node ./game-server-build/gameserver.js",
     "loginServer:start": "cross-env DEBUG=* node ./loginserver.js",
     "server:start": "npm-run-all --parallel gameServer:start loginServer:start",
     "test": "echo \"Error: no test specified\" && exit 1"
