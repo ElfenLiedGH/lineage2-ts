@@ -10,11 +10,22 @@
     {
       "login": "a",
       "classId": 53,
-      "name": "testgnome",
+      "name": "ddddd",
       "hairStyle": 0,
       "hairColor": 0,
       "face": 0,
-      "raceId": 4
+      "raceId": 4,
+      "sex": 0
+    },
+    {
+      "login": "a",
+      "classId": 31,
+      "name": "dark",
+      "hairStyle": 0,
+      "hairColor": 0,
+      "face": 0,
+      "raceId": 2,
+      "sex": 1
     }
   ]
 }

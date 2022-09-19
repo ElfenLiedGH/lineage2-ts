@@ -2,7 +2,6 @@ import {Stats} from "../../../dataSets/setting/stats";
 import {ClassTypes} from "../../../dataSets/generated/manual/classTypes"
 import {HpTablesHpTable} from "../../../dataSets/generated/pcParameters/hpTablesHpTable";
 import {MpTablesMpTable} from "../../../dataSets/generated/pcParameters/mpTablesMpTable";
-import {Player} from "./player";
 import {CombatStatsBaseAttackRange} from "../../../dataSets/generated/pcParameters/combatStatsBaseAttackRange";
 import {CombatStatsBaseAttackSpeed} from "../../../dataSets/generated/pcParameters/combatStatsBaseAttackSpeed";
 import {CombatStatsBaseAttackType} from "../../../dataSets/generated/pcParameters/combatStatsBaseAttackType";
@@ -17,8 +16,12 @@ import {CombatStatsBaseRandDam} from "../../../dataSets/generated/pcParameters/c
 import {CharacterPrototype, CharacterPrototypes} from "../characterPrototype";
 import {PrototypeShortsCorrespondence} from "../prototypeShortsCorrespondence";
 import {Sex} from "../../../types/sex";
-import {StartPoint} from "../../../dataSets/generated/settings/startPoint";
+import {StartPoint} from "@dataSets/generated/settings/startPoint";
 import {Point} from "../../../types/point";
+import {MovingSpeed} from "@dataSets/generated/pcParameters/movingSpeed";
+import {MovingType} from "@dataSets/generated/pcParameters/movingSpeed";
+import {CollisionBox} from "@dataSets/generated/pcParameters/collisionBox";
+import {CombatStatsShorts} from "@dataSets/generated/pcParameters/combatStatsShorts";
 
 const combatStatsBaseAttackRange = new CombatStatsBaseAttackRange();
 const combatStatsBaseAttackSpeed = new CombatStatsBaseAttackSpeed();
@@ -31,7 +34,6 @@ const combatStatsBaseMagicAttack = new CombatStatsBaseMagicAttack();
 const combatStatsBaseMagicDefend = new CombatStatsBaseMagicDefend();
 const combatStatsBasePhysicalAttack = new CombatStatsBasePhysicalAttack();
 const combatStatsBaseRandDam = new CombatStatsBaseRandDam();
-const startPoint = new StartPoint();
 
 /**
  * Получение дефолтных характеристик
@@ -40,7 +42,7 @@ export class CharacterFactory {
 
   private readonly characterPrototype: CharacterPrototypes
   private readonly className: keyof ClassTypes
-
+  private readonly prototypeShortsCorrespondence: keyof CombatStatsShorts
   constructor(
     private readonly classId: number,
     private readonly lvl: number,
@@ -48,6 +50,7 @@ export class CharacterFactory {
   ) {
     this.className = ClassTypes.getClassNameById(classId);
     this.characterPrototype = CharacterPrototype.getPrototypeByClass(this.className)
+    this.prototypeShortsCorrespondence = PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)
   }
 
   private getStats() {
@@ -63,51 +66,64 @@ export class CharacterFactory {
   }
 
   private getAttackRange() {
-    return combatStatsBaseAttackRange[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseAttackRange[this.prototypeShortsCorrespondence]
   }
 
   private getAttackSpeed() {
-    return combatStatsBaseAttackSpeed[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseAttackSpeed[this.prototypeShortsCorrespondence]
   }
 
   private getAttackType() {
-    return combatStatsBaseAttackType[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseAttackType[this.prototypeShortsCorrespondence]
   }
 
   private getCanPenetrate() {
-    return combatStatsBaseCanPenetrate[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseCanPenetrate[this.prototypeShortsCorrespondence]
   }
 
   private getCritical() {
-    return combatStatsBaseCritical[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseCritical[this.prototypeShortsCorrespondence]
   }
 
   private getDamageRange() {
-    return combatStatsBaseDamageRange[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseDamageRange[this.prototypeShortsCorrespondence]
   }
 
   private getDefend() {
-    return combatStatsBaseDefend[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseDefend[this.prototypeShortsCorrespondence]
   }
 
   private getMagicAttack() {
-    return combatStatsBaseMagicAttack[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseMagicAttack[this.prototypeShortsCorrespondence]
   }
 
   private getMagicDefend() {
-    return combatStatsBaseMagicDefend[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseMagicDefend[this.prototypeShortsCorrespondence]
   }
 
   private getPhysicalAttack() {
-    return combatStatsBasePhysicalAttack[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBasePhysicalAttack[this.prototypeShortsCorrespondence]
   }
 
   private getRandDam() {
-    return combatStatsBaseRandDam[PrototypeShortsCorrespondence.get(this.characterPrototype, this.sex)]
+    return combatStatsBaseRandDam[this.prototypeShortsCorrespondence]
   }
 
   private getStartPoint() {
     return StartPoint.getPoint(this.characterPrototype)
+  }
+
+  private getMovingSpeed() {
+    return {
+      [MovingType.walk]:
+        MovingSpeed.getValue(this.prototypeShortsCorrespondence, MovingType.walk),
+      [MovingType.run]:
+        MovingSpeed.getValue(this.prototypeShortsCorrespondence, MovingType.run)
+    }
+  }
+
+  private getCollision() {
+    return CollisionBox.getValue(this.prototypeShortsCorrespondence)
   }
 
   public getValue() {
@@ -122,7 +138,12 @@ export class CharacterFactory {
     const location: Point = {x: 0, y: 0, z: 0}
     location.x = startPoint[0]
     location.y = startPoint[1]
-    location.z = startPoint[2] + 100
+    location.z = startPoint[2]
+
+    const movingSpeed = this.getMovingSpeed();
+
+    const collision = this.getCollision();
+
     return {
       stats,
       maxHp,
@@ -131,6 +152,9 @@ export class CharacterFactory {
       physicalAttack,
       magicAttack,
       location,
+      walkSpeed: movingSpeed[MovingType.walk],
+      runSpeed: movingSpeed[MovingType.run],
+      collision,
     }
   }
 }

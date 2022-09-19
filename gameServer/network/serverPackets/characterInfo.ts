@@ -2,7 +2,6 @@ import {BasePacket} from "@gameServer/network/serverPackets/basePacket";
 import {Player} from "../../models/actor/player";
 import {Sex} from "../../../types/sex";
 
-// TODO убрать зависимость Player через доп класс фабрику
 export class CharacterInfo extends BasePacket {
   constructor(player: Player) {
     super(600);
@@ -46,23 +45,12 @@ export class CharacterInfo extends BasePacket {
       .writeD(player.getRunSpeed()) // getFlyingRunSpeed
       .writeD(player.getWalkSpeed()) // getFlyingWalkSpeed
 
-    // male
-    if (player.getSex() === Sex.male) {
-      this.writeF(player.maleMovementMultiplier)
-        .writeF((player.getPSpeed() / 500) / 0.555)
-        .writeF(player.maleCollisionRadius)
-        .writeF(player.maleCollisionHeight)
-    }
+      .writeF(player.getMovementMultiplier())
+      .writeF((player.getPSpeed() / 500) / 0.555)
+      .writeF(player.getCollisionRadius())
+      .writeF(player.getCollisionHeight())
 
-    // female
-    if (player.getStr() === Sex.female) {
-      this.writeF(player.femaleMovementMultiplier)
-        .writeF((player.getPSpeed() / 500) / 0.555)
-        .writeF(player.femaleCollisionRadius)
-        .writeF(player.femaleCollisionHeight)
-    }
-
-    this.writeD(player.getHairStyle())
+      .writeD(player.getHairStyle())
       .writeD(player.getHairColor())
       .writeD(player.getFace())
 

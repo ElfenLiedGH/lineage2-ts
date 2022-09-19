@@ -40,23 +40,9 @@ public heading = 0
   public _waitType = 1; // 0 - sit, 1 - stand
   public _moveType = 1; // 0 - walk, 1 - run
   public _inCombat = 0; // 0 - idle, 1 - combat
-  public _isRegenerationHp = false;
-  public _isRegenerationMp = false;
-
-  public characterSlot = 0;
 
 
   public canCraft = 0;
-
-  public maleMovementMultiplier = 0;
-  public maleAttackSpeedMultiplier = 0;
-  public maleCollisionRadius = 0;
-  public maleCollisionHeight = 0;
-
-  public femaleMovementMultiplier = 0;
-  public femaleAttackSpeedMultiplier = 0;
-  public femaleCollisionRadius = 0;
-  public femaleCollisionHeight = 0;
 
   public privateStoreType = 0;
 

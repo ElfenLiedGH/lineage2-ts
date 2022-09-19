@@ -54,6 +54,7 @@ export class CharacterCreate extends BasePacket {
           hairColor: +this.getHairColor(),
           face: +this.getFace(),
           raceId: +this.getRace(),
+          sex:+ this.getSex()
         });
         const charactersData = CharacterDb.getCharacters(this._packet.getLogin()).map((el, slot) => {
           const accountCharacter = new Character();
@@ -79,7 +80,7 @@ export class CharacterCreate extends BasePacket {
     return this._data.getData()[2];
   }
 
-  getGender() {
+  getSex() {
     return this._data.getData()[3];
   }
 

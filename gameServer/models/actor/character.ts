@@ -184,13 +184,13 @@ export class Character extends WorldObject {
     return this.evasion
   }
 
-  private runSpeed: number = 0;
+  private runSpeed: number = 100;
 
   public getRunSpeed() {
     return this.runSpeed;
   }
 
-  private walkSpeed: number = 0
+  private walkSpeed: number = 100
 
   public getWalkSpeed() {
     return this.walkSpeed;
@@ -257,6 +257,30 @@ export class Character extends WorldObject {
     return this.login;
   }
 
+  private collisionRadius: number = 0;
+
+  public getCollisionRadius() {
+    return this.collisionRadius;
+  }
+
+  private collisionHeight: number = 0;
+
+  public getCollisionHeight() {
+    return this.collisionHeight
+  }
+
+  private movementMultiplier: number = 20;
+
+  public getMovementMultiplier() {
+    return this.movementMultiplier;
+  }
+
+  private attackSpeedMultiplier: number = 1;
+
+  public getAttackSpeedMultiplier() {
+    return this.attackSpeedMultiplier;
+  }
+
   public fillDefaultData(login: string, slot: number) {
     const character = CharacterDb.getCharacters(login)[slot];
     console.log('characters', CharacterDb.getCharacters(login))
@@ -279,7 +303,7 @@ export class Character extends WorldObject {
     this.wit = defaultValues.stats.wit;
     this.men = defaultValues.stats.men;
 
-    this.maxHp = defaultValues.maxHp + 1000;
+    this.maxHp = defaultValues.maxHp;
     this.maxMp = defaultValues.maxMp;
 
     this.hp = this.maxHp;
@@ -289,8 +313,13 @@ export class Character extends WorldObject {
     this.pAtk = defaultValues.physicalAttack;
     this.mAtk = defaultValues.magicAttack;
 
+    this.walkSpeed = defaultValues.walkSpeed
+    this.runSpeed = defaultValues.runSpeed
+
     this.location = defaultValues.location;
-    console.log('location', this.location)
+
+    this.collisionRadius = defaultValues.collision[0]
+    this.collisionHeight = defaultValues.collision[1]
 
   }
 

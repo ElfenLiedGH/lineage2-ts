@@ -62,16 +62,6 @@ export class Character {
 
     this.canCraft = null;
 
-    this.maleMovementMultiplier = null;
-    this.maleAttackSpeedMultiplier = null;
-    this.maleCollisionRadius = null;
-    this.maleCollisionHeight = null;
-
-    this.femaleMovementMultiplier = null;
-    this.femaleAttackSpeedMultiplier = null;
-    this.femaleCollisionRadius = null;
-    this.femaleCollisionHeight = null;
-
     this.items = [];
 
     this._init();

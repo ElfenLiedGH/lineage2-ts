@@ -1,5 +1,3 @@
-import assert from "assert";
-
 import {DefaultLoader} from "../defaultLoader";
 import {ClassGenerator} from "../classGenerator";
 
