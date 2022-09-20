@@ -8,7 +8,7 @@ export class NpcInfo extends BasePacket {
 		this.writeC(0x22)
 			.writeD(npc.getObjectId())
 			.writeD(startId + npc.getId())
-			.writeD(npc.getAttacked())
+			.writeD(1) // TODO isAutoAttackable
 			.writeD(npc.getLocation().x)
 			.writeD(npc.getLocation().y)
 			.writeD(npc.getLocation().z)

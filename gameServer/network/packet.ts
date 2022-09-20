@@ -28,6 +28,11 @@ import {RequestShowBoard} from "./clientPackets/requestShowBoard";
 
 const log = debug('game-server:packet')
 
+export interface ConnectionData {
+  remoteAddress: string | undefined,
+  remotePort: number | undefined,
+}
+
 export class Packet {
   private _sessionKey1Server: [number, number] = [0x55555555, 0x44444444];
   private _sessionKey2Server: [number, number] = [0x55555555, 0x44444444];
@@ -35,14 +40,16 @@ export class Packet {
   private _decrypted: NullableBuffer = null;
 
   private login: string = '';
-  public setLogin(login:string){
+
+  public setLogin(login: string) {
     this.login = login;
   }
-  public getLogin(){
+
+  public getLogin() {
     return this.login
   }
 
-  constructor(private _player: Player) {
+  constructor(private _player: Player, private connectionData: ConnectionData) {
   }
 
   setEncryption(value: boolean) {
@@ -173,10 +180,10 @@ export class Packet {
   }
 
   onClose() {
-    log(`Connection to the game server is closed for: ${this._player.getSocket().remoteAddress}:${this._player.getSocket().remotePort}`);
+    log(`Connection to the game server is closed for: ${this.connectionData.remoteAddress}:${this.connectionData.remotePort}`);
   }
 
   onError() {
-    log(`Client connection lost for: ${this._player.getSocket().remoteAddress}:${this._player.getSocket().remotePort}`);
+    log(`Client connection lost for: ${this.connectionData.remoteAddress}:${this.connectionData.remotePort}`);
   }
 }

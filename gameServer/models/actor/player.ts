@@ -12,7 +12,6 @@ import {Character} from './character'
 import {Socket} from 'net'
 import {BasePacket} from "@gameServer/network/serverPackets/basePacket";
 import {SetToLocation} from "@gameServer/network/serverPackets/setToLocation";
-import {Die} from "@gameServer/network/serverPackets/die";
 import {Attack} from "@gameServer/network/serverPackets/attack";
 import {SystemMessage} from "@gameServer/network/serverPackets/systemMessage";
 import {AutoAttackStart} from "@gameServer/network/serverPackets/autoAttackStart";
@@ -25,6 +24,7 @@ import {Npc} from "@gameServer/models/npc";
 
 export enum PlayerTask {
   GET_VISIBLE_OBJECTS,
+  COMBAT
 }
 
 export class Player extends Character {
@@ -33,10 +33,22 @@ export class Player extends Character {
 
   private online: boolean = false;
 
+  public setInCombat(inCombat: boolean) {
+    super.setInCombat(inCombat);
+    if (inCombat) {
+      this.sendPacket(new AutoAttackStart(this.getObjectId()));
+      this.broadcast(new AutoAttackStart(this.getObjectId()));
+    } else {
+      this.sendPacket(new AutoAttackStop(this.getObjectId()));
+      this.broadcast(new AutoAttackStart(this.getObjectId()));
+    }
+  }
+
+  private taskReceiver = (task: PlayerTask) => {
+    this[task]();
+  }
   private tasks = new TaskList<PlayerTask>()
-    .on('task', (task: PlayerTask) => {
-      this[task]();
-    })
+    .on('task', this.taskReceiver)
 
   private [PlayerTask.GET_VISIBLE_OBJECTS]() {
     this.getVisibleObjects(npc => {
@@ -45,12 +57,38 @@ export class Player extends Character {
     this.tasks.createTask(1000, PlayerTask.GET_VISIBLE_OBJECTS.toString())
   }
 
+  private [PlayerTask.COMBAT]() {
+    const target = this.getTarget();
+    if (!target) {
+      this.setInCombat(false);
+      return;
+    }
+    if (!this.getInCombat()) {
+      this.setInCombat(true);
+    }
+    const objectId = target.getObjectId();
+    let attacks = {
+      soulshot: Math.random() > 0.5,
+      critical: Math.random() > 0.5,
+      miss: Math.random() < 0.1
+    }
+    console.log(`Я ${this.getName()} бью ${objectId} ${target.getName()} ${JSON.stringify(attacks)}`)
+
+    // this.sendPacket(new StatusUpdate(objectId, target.hp, target.maximumHp));
+    // this.changeCombatStateTask();
+    // this.changeFlagTask();
+    this.sendPacket(new Attack(this.getObjectId(), objectId, 10, attacks.miss, attacks.critical, attacks.soulshot, this.getLocation()));
+    this.sendPacket(new UserInfo(this));
+    this.tasks.createTask(3000, PlayerTask.COMBAT.toString())
+  }
+
   public setOnline(online: boolean) {
     this.online = online;
     if (online) {
-      this.tasks.createTask(1000, PlayerTask.GET_VISIBLE_OBJECTS.toString())
+      this.tasks.createTask(3000, PlayerTask.GET_VISIBLE_OBJECTS.toString())
     } else {
       this.tasks.deleteTasks();
+      this.tasks.off('task', this.taskReceiver)
     }
   }
 
@@ -121,140 +159,6 @@ export class Player extends Character {
     return this.socket
   }
 
-  constructor(private readonly socket: Socket) {
-    super();
-    log('new player')
-    this.tasks.createTask(1000, PlayerTask.GET_VISIBLE_OBJECTS.toString())
-
-  }
-
-  setToLocation(newLocation: Point) {
-    this.sendPacket(new SetToLocation(this.getObjectId(), 0, newLocation))
-  }
-
-
-  startCombat() {
-    const target = this.getTarget();
-    if (!target) {
-      console.log('Нет цели')
-      return;
-    }
-    const objectId = target.getObjectId();
-    console.log(`Я ${this.getName()} бью ${objectId}`)
-    // console.log(`Я ${this.name} бью ${objectId} ${target.hp}`)
-    let attacks = {
-      soulshot: false,
-      critical: false,
-      miss: false
-    }
-
-    // if (this.player) {
-    //     let target = world.find(objectId);
-
-    if (target.getHp() <= 0) {
-      this.sendPacket(new Die(target.getObjectId()));
-      // this.broadcast(new Die(target));
-      // this.sendPacket(new DropItem(target, items.create(57)));
-      // this.broadcast(new DropItem(target, items.create(57)));
-    } else {
-      // this.sendPacket(new StatusUpdate(objectId, target.hp, target.maximumHp));
-      // this.changeCombatStateTask();
-      // this.changeFlagTask();
-      this.sendPacket(new Attack(this.getObjectId(), objectId, 10, attacks.miss, attacks.critical, attacks.soulshot, this.getLocation()));
-      this.sendPacket(new UserInfo(this));
-      // this.broadcast(new Attack(this, attacks));
-
-
-      setTimeout(() => {
-        this.startCombat()
-      }, 3000)
-      // }, 500000 / this.getPSpeed())
-
-      // setTimeout(() => {
-      //     target.attack();
-      // }, 500000 / target.pSpd);
-    }
-    // }
-
-    // if (!this.player) {
-    //     if (this.bot) {
-    //         this.changeCombatStateTask();
-    //     }
-    //
-    //     if (!this.time) this.time = 0;
-    //
-    //     let target = world.find(objectId);
-    //
-    //     this.target = target.objectId;
-    //
-    //     this.broadcast(new MoveToPawn(this));
-    //
-    //     // test
-    //     // Надо дожидатся окончания MoveToPawn и начинать атаку
-    //     setTimeout(() => {
-    //         this.broadcast(new StopMove(this));
-    //         // setTimeout(() => {
-    //         // 	this.time++;
-    //
-    //         // 	if (this.time <= 3) {
-    //         // 		this.attack(this.target);
-    //
-    //         // 		this.broadcast(new Attack(this, attacks));
-    //
-    //         // 	} else {
-    //         // 		this.time = 0;
-    //         // 	}
-    //         // }, 500000 / this.pSpd);
-    //     }, 3000)
-    // }
-  }
-
-  // broadcast(packet:  Buffer) { // for test
-  //     let packetLength =  Buffer.from([0x00, 0x00]);
-  //     let players = world.getPlayers();
-  //
-  //     packetLength.writeInt16LE(packet.length + 2);
-  //
-  //     for (let i = 0; i < players.length; i++) {
-  //         if (players[i].online && players[i].socket !== this.socket && !players[i].bot) {
-  //             packet = Buffer.concat([packetLength, packet]);
-  //             players[i].socket.write(packet);
-  //         }
-  //     }
-  // }
-
-  sendPacket(packet: BasePacket, encoding = false /* false for test */) {
-    let packetLength = Buffer.from([0x00, 0x00]);
-    let packetCopy = Buffer.from(packet.getBuffer());
-
-    packetLength.writeInt16LE(packetCopy.length + 2);
-
-    if (encoding) {
-      let packetEncrypted = Buffer.from(this.xor.encrypt(packetCopy));
-
-      packetEncrypted = Buffer.concat([packetLength, packetEncrypted]);
-      this.socket.write(packetEncrypted);
-    } else {
-      const buffer = Buffer.concat([packetLength, packetCopy]);
-      this.socket.write(buffer);
-
-    }
-  }
-
-  broadcast(packet: BasePacket) {
-    let packetLength = Buffer.from([0x00, 0x00]);
-    let players = World.getInstance().getPlayers();
-    const buffer = packet.getBuffer();
-    packetLength.writeInt16LE(buffer.length + 2);
-
-    players.forEach(player => {
-      if (player.getOnline() && player.getSocket() !== this.getSocket()) {
-        const socketBuffer = Buffer.concat([packetLength, buffer]); // for test
-        //players[i].socket.write(packetEncrypted);
-        player.getSocket().write(socketBuffer); // for test
-      }
-    })
-  }
 
   getWaitType() {
     return this._waitType;
@@ -310,33 +214,68 @@ export class Player extends Character {
     }, 0);
   }
 
-  // private taskGetVisibleObjects() {
-  //   console.log('taskGetVisibleObjects')
-  //   this.tasks.createTask(2000, () => {
-  //     this.getVisibleObjects(World.getInstance().getNpcList(), npc => {
-  //       this.sendPacket(new NpcInfo(npc));
-  //     })
-  //   })
-  // }
+  constructor(private readonly socket: Pick<Socket, 'write'>) {
+    super();
+    log('new player')
+  }
 
-  // getVisiblePlayers(players: Player[], callback: Function) {
-  //   let radius = 2000;
+  setToLocation(newLocation: Point) {
+    this.sendPacket(new SetToLocation(this.getObjectId(), 0, newLocation))
+  }
+
+
+  startCombat() {
+    this.tasks.createTask(0, PlayerTask.COMBAT.toString())
+  }
+
+  // broadcast(packet:  Buffer) { // for test
+  //     let packetLength =  Buffer.from([0x00, 0x00]);
+  //     let players = world.getPlayers();
   //
-  //   for (let i = 0; i < players.length; i++) {
-  //     if (players[i].socket !== this.socket) {
-  //       // TODO ts
-  //       // @ts-ignore
-  //       if (players[i].online && this._checkPointInCircle(this.location.x, this.location.y, players[i].location.x, players[i].location.y, radius)) {
-  //         // TODO ts
-  //         // @ts-ignore
-  //         console.log(`I am ${this.name}, I see  ${players[i].name}`)
-  //         callback(players[i]);
-  //       }
+  //     packetLength.writeInt16LE(packet.length + 2);
+  //
+  //     for (let i = 0; i < players.length; i++) {
+  //         if (players[i].online && players[i].socket !== this.socket && !players[i].bot) {
+  //             packet = Buffer.concat([packetLength, packet]);
+  //             players[i].socket.write(packet);
+  //         }
   //     }
-  //   }
   // }
 
-  getVisibleObjects(callback: (npc: Npc) => void) {
+  sendPacket(packet: BasePacket, encoding = false /* false for test */) {
+    let packetLength = Buffer.from([0x00, 0x00]);
+    let packetCopy = Buffer.from(packet.getBuffer());
+
+    packetLength.writeInt16LE(packetCopy.length + 2);
+
+    if (encoding) {
+      let packetEncrypted = Buffer.from(this.xor.encrypt(packetCopy));
+
+      packetEncrypted = Buffer.concat([packetLength, packetEncrypted]);
+      this.socket.write(packetEncrypted);
+    } else {
+      const buffer = Buffer.concat([packetLength, packetCopy]);
+      this.socket.write(buffer);
+
+    }
+  }
+
+  broadcast(packet: BasePacket) {
+    let packetLength = Buffer.from([0x00, 0x00]);
+    let players = World.getInstance().getPlayers();
+    const buffer = packet.getBuffer();
+    packetLength.writeInt16LE(buffer.length + 2);
+
+    players.forEach(player => {
+      if (player.getOnline() && player.getSocket() !== this.getSocket()) {
+        const socketBuffer = Buffer.concat([packetLength, buffer]); // for test
+        //players[i].socket.write(packetEncrypted);
+        player.getSocket().write(socketBuffer); // for test
+      }
+    })
+  }
+
+  private getVisibleObjects(callback: (npc: Npc) => void) {
     let radius = 2000;
     const npcs = World.getInstance().getNpcList();
     const playerLocation = this.getLocation();

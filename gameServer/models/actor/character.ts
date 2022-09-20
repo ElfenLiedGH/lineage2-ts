@@ -1,9 +1,8 @@
-import {Point} from '../../../types/point'
+
 import {WorldObject} from "../worldObject";
 import {IdFactory} from "../../../util/IdFactory";
 import {Sex} from "../../../types/sex";
 import {CharacterFactory} from "./characterFactory";
-import {ClassTypes} from "@dataSets/generated/manual/classTypes";
 import {CharacterDb} from "@gameServer/db/character";
 import assert from "assert";
 
@@ -262,6 +261,16 @@ export class Character extends WorldObject {
     return this.collisionHeight
   }
 
+  private inCombat = false;
+
+  public setInCombat(inCombat:boolean){
+    this.inCombat = inCombat;
+  }
+
+  public getInCombat(){
+    return this.inCombat;
+  }
+
   private movementMultiplier: number = 20;
 
   public getMovementMultiplier() {
@@ -304,6 +313,7 @@ export class Character extends WorldObject {
 
     this.critical = defaultValues.critical;
     this.pAtk = defaultValues.physicalAttack;
+    this.pSpd = defaultValues.attackSpeed;
     this.mAtk = defaultValues.magicAttack;
 
     this.walkSpeed = defaultValues.walkSpeed

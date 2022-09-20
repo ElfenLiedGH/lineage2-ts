@@ -133,6 +133,7 @@ export class CharacterFactory {
     const critical = +this.getCritical();
     const physicalAttack = +this.getPhysicalAttack();
     const magicAttack = +this.getMagicAttack();
+    const attackSpeed = +this.getAttackSpeed();
 
     const startPoint = this.getStartPoint()
     const location: Point = {x: 0, y: 0, z: 0}
@@ -150,6 +151,7 @@ export class CharacterFactory {
       maxMp,
       critical,
       physicalAttack,
+      attackSpeed,
       magicAttack,
       location,
       walkSpeed: movingSpeed[MovingType.walk],

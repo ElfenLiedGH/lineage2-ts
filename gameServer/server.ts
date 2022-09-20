@@ -1,4 +1,3 @@
-
 import debug from 'debug';
 import {gameserver} from '../config/config'
 import {Socket, createServer} from 'net'
@@ -6,7 +5,9 @@ import {Player} from './models/actor/player'
 
 import {Packet} from "./network/packet";
 import {World} from "./world";
+
 const log = debug('game-server:server')
+
 export class Server {
 
   start() {
@@ -19,8 +20,11 @@ export class Server {
 
   _onSocket(socket: Socket) {
     let player = new Player(socket);
-    let packet = new Packet(player);
-
+    const connectionData = {
+      remoteAddress: socket.remoteAddress,
+      remotePort: socket.remotePort,
+    }
+    let packet = new Packet(player, connectionData);
 
 
     socket.on("data", packet.onData.bind(packet));
