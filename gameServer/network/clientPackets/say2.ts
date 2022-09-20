@@ -1,6 +1,8 @@
 import {BasePacket} from "./basePacket";
 import {CreateSay} from "../serverPackets/createSay";
 import {SetToLocation} from "@gameServer/network/serverPackets/setToLocation";
+import {NpcInfo} from "@gameServer/network/serverPackets/npcInfo";
+import {Say2Command} from "@gameServer/command/say2Command";
 
 let ALL = 0;
 let SHOUT = 1;
@@ -35,18 +37,8 @@ export class Say2 extends BasePacket {
 
   init() {
     let text = this.getText();
-    if (text.search(/\.loc/) !== -1) {
-      console.log('chg location')
-      const point = text.replace('.loc ', '').split(' ').map(el => +el)
-      if (point.length === 3) {
-        console.log('change', point)
-        this._player.sendPacket(new SetToLocation(this._player.getObjectId(), 0, {
-          x: point[0],
-          y: point[1],
-          z: point[2]
-        }))
-      }
-
+    if (!Say2Command(text, this._player)) {
+      return;
     }
     this._player.sendPacket(new CreateSay(this._player.getObjectId(), this._player.getName(), +this.getType(), text));
     this._player.broadcast(new CreateSay(this._player.getObjectId(), this._player.getName(), +this.getType(), this.getText()));

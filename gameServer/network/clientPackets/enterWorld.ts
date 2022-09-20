@@ -10,6 +10,7 @@ import {ItemList} from '../serverPackets/itemList'
 import {CharacterInfo} from '../serverPackets/characterInfo'
 import {NpcInfo} from '../serverPackets/npcInfo'
 import {Player} from "../../models/actor/player";
+import {Gremlin} from "@dataSets/generated/npcData/warriors/gremlin";
 
 export class EnterWorld extends BasePacket {
 
@@ -22,6 +23,13 @@ export class EnterWorld extends BasePacket {
       this._player.sendPacket(new CreateSay(this._player.getObjectId(), this._player.getName(), base.MESSAGE_TYPE.ANNOUNCEMENT, announcement));
     })
 
+
+    setTimeout(() => {
+      const gremlin = new Gremlin()
+      gremlin.setLocation(this._player.getLocation())
+      gremlin.spawn();
+    }, 1000)
+
     this._player.sendPacket(new SunRise());
     this._player.sendPacket(new UserInfo(this._player));
     this._player.sendPacket(new ItemList(this._player));
@@ -33,16 +41,18 @@ export class EnterWorld extends BasePacket {
     //this._player.sendPacket(new serverPackets.Ride(this._player));
     this._player.broadcast(new CharacterInfo(this._player)); // Оповестить всех, что персонаж зашел в мир
 
-    this._player.getVisibleObjects(World.getInstance().getNpcList(), (npc: Player) => {
-      this._player.sendPacket(new NpcInfo(npc));
-    })
+    // this._player.getVisibleObjects(World.getInstance().getNpcList(), (npc: Player) => {
+    //   this._player.sendPacket(new NpcInfo(npc));
+    // })
 
-    this._player.getVisiblePlayers(World.getInstance().getPlayers(), (player: Player) => {
-      this._player.sendPacket(new CharacterInfo(player));
-    });
+    this._player.setOnline(true)
 
-    this._player.getVisiblePlayers(World.getInstance().getBots(), (bot: Player) => {
-      this._player.sendPacket(new CharacterInfo(bot));
-    });
+    // this._player.getVisiblePlayers(World.getInstance().getPlayers(), (player: Player) => {
+    //   this._player.sendPacket(new CharacterInfo(player));
+    // });
+    //
+    // this._player.getVisiblePlayers(World.getInstance().getBots(), (bot: Player) => {
+    //   this._player.sendPacket(new CharacterInfo(bot));
+    // });
   }
 }

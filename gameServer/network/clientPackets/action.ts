@@ -1,12 +1,12 @@
-import {Html} from '../../html';
+// import {Html} from '../../html';
 import {World} from '../../world';
 import {TargetSelected} from '../serverPackets/targetSelected'
 import {ActionFailed} from '../serverPackets/actionFailed'
-import {NpcHtmlMessage} from '../serverPackets/npcHtmlMessage'
+// import {NpcHtmlMessage} from '../serverPackets/npcHtmlMessage'
 import {StatusUpdate} from '../serverPackets/statusUpdate'
 import {BasePacket} from "./basePacket";
+import {Npc} from "@gameServer/models/npc";
 
-let Npc = require("./../../Npc");
 
 // 0 for simple click  1 for shift click
 enum ActionTypes {
@@ -55,8 +55,10 @@ export class Action extends BasePacket {
           if (this._player.getTarget() && this._player.getTarget()!.getObjectId() === object.getObjectId()) {
             this._player.startCombat();
           } else {
+            // TODO ts
+            // @ts-ignore
             this._player.setTarget(object);
-            this._player.sendPacket(new TargetSelected(object.objectId));
+            this._player.sendPacket(new TargetSelected(object.getObjectId()));
           }
 
         } else {
@@ -64,13 +66,14 @@ export class Action extends BasePacket {
         }
 
         if (object instanceof Npc) {
-          if (object.type === "npc") {
-            this._player.sendPacket(new NpcHtmlMessage(Html.getInstance().get(object.id)!));
-          }
+          // if (object.type === "npc") {
+          //   this._player.sendPacket(new NpcHtmlMessage(Html.getInstance().get(object.id)!));
+          // }
 
-          if (object.type === "monster") {
-            this._player.sendPacket(new StatusUpdate(object.objectId, object.hp, object.maximumHp));
-          }
+          // if (object.type === "monster") {
+          this._player.sendPacket(new StatusUpdate(object.getObjectId(), 100, 100));
+          // this._player.sendPacket(new StatusUpdate(object.getObjectId(), object.hp, object.maximumHp));
+          // }
         }
 
         break;

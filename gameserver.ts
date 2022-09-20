@@ -4,7 +4,6 @@ import {IdFactory} from './util/IdFactory'
 import {Announcements} from "./gameServer/announcements"
 import {Html} from "./gameServer/html"
 import {Items} from "./gameServer/items"
-import {NpcList} from "./gameServer/npcList"
 import {World} from "./gameServer/world"
 // import {Bots} from "./gameServer/bots"
 // import tasks from "./gameServer/Tasks"
@@ -16,8 +15,6 @@ Items.getInstance().addFiles([{path: "./data/items/armor.json", category: "armor
   path: "./data/items/weapon.json",
   category: "weapon"
 }, {path: "./data/items/etc.json", category: "etc"}]);
-// const npcList = NpcList.getInstance();
-// npcList.addFile("./data/npc.json");
 
 // init
 // npcList.spawn();

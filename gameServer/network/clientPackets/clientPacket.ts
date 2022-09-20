@@ -5,7 +5,7 @@
 // readB - string
 // readS - string
 
-import {Packet} from "../../packet";
+import {Packet} from "../packet";
 
 export class ClientPacket {
   private _data: string[] = [];

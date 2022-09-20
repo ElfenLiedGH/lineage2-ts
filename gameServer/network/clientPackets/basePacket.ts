@@ -1,5 +1,5 @@
 import {ClientPacket} from "./clientPacket";
-import {Packet} from "../../packet";
+import {Packet} from "../packet";
 import {Player} from "../../models/actor/player";
 import debug from 'debug';
 const log = debug('game-server:network:client-packets')

@@ -12,8 +12,7 @@ export class CharacterSelected extends BasePacket {
   }
 
   init() {
-    this._player.fillDefaultData(this._packet.getLogin(), +this.getCharacterSlot())
-    this._player.online = true;
+    this._player.fillDefaultData(this._packet.getLogin(), +this.getCharacterSlot());
     // for test
     const items = Items.getInstance();
     this._player.items.push(items.create(400));

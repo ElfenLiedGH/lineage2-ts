@@ -1,30 +1,30 @@
-import {Player} from "./models/actor/player";
-import {NullableBuffer} from "../types/nullableBuffer";
-import {NullableNumber} from "../types/nullableNumber";
+import {Player} from "../models/actor/player";
+import {NullableBuffer} from "../../types/nullableBuffer";
+import {NullableNumber} from "../../types/nullableNumber";
 import debug from 'debug';
-import {ProtocolVersion} from "./network/clientPackets/protocolVersion";
-import {RequestAuthLogin} from "./network/clientPackets/requestAuthLogin";
-import {NewCharacter} from "./network/clientPackets/newCharacter";
-import {Logout} from "./network/clientPackets/logout";
-import {CharacterCreate} from "./network/clientPackets/characterCreate";
-import {CharacterSelected} from "@gameServer/network/clientPackets/characterSelected";
-import {RequestQuestList} from "./network/clientPackets/requestQuestList";
-import {EnterWorld} from "./network/clientPackets/enterWorld";
-import {MoveBackwardToLocation} from "./network/clientPackets/moveBackwardToLocation";
-import {RequestSocialAction} from "./network/clientPackets/requestSocialAction";
-import {Say2} from "./network/clientPackets/say2";
-import {StopMove} from "./network/clientPackets/stopMove";
-import {RequestActionUse} from "./network/clientPackets/requestActionUse";
-import {Action} from "./network/clientPackets/action";
-import {RequestTargetCancel} from "./network/clientPackets/requestTargetCancel";
-import {RequestItemList} from "./network/clientPackets/requestItemList";
-import {RequestUseItem} from "./network/clientPackets/requestUseItem";
-import {RequestSkillList} from "./network/clientPackets/requestSkillList";
-import {ValidatePosition} from "./network/clientPackets/validatePosition";
-import {RequestBypassToServer} from "./network/clientPackets/requestBypassToServer";
-import {RequestMagicSkillUse} from "./network/clientPackets/requestMagicSkillUse";
-import {RequestAttack} from "./network/clientPackets/requestAttack";
-import {RequestShowBoard} from "./network/clientPackets/requestShowBoard";
+import {ProtocolVersion} from "./clientPackets/protocolVersion";
+import {RequestAuthLogin} from "./clientPackets/requestAuthLogin";
+import {NewCharacter} from "./clientPackets/newCharacter";
+import {Logout} from "./clientPackets/logout";
+import {CharacterCreate} from "./clientPackets/characterCreate";
+import {CharacterSelected} from "./clientPackets/characterSelected";
+import {RequestQuestList} from "./clientPackets/requestQuestList";
+import {EnterWorld} from "./clientPackets/enterWorld";
+import {MoveBackwardToLocation} from "./clientPackets/moveBackwardToLocation";
+import {RequestSocialAction} from "./clientPackets/requestSocialAction";
+import {Say2} from "./clientPackets/say2";
+import {StopMove} from "./clientPackets/stopMove";
+import {RequestActionUse} from "./clientPackets/requestActionUse";
+import {Action} from "./clientPackets/action";
+import {RequestTargetCancel} from "./clientPackets/requestTargetCancel";
+import {RequestItemList} from "./clientPackets/requestItemList";
+import {RequestUseItem} from "./clientPackets/requestUseItem";
+import {RequestSkillList} from "./clientPackets/requestSkillList";
+import {ValidatePosition} from "./clientPackets/validatePosition";
+import {RequestBypassToServer} from "./clientPackets/requestBypassToServer";
+import {RequestMagicSkillUse} from "./clientPackets/requestMagicSkillUse";
+import {RequestAttack} from "./clientPackets/requestAttack";
+import {RequestShowBoard} from "./clientPackets/requestShowBoard";
 
 const log = debug('game-server:packet')
 
@@ -32,9 +32,7 @@ export class Packet {
   private _sessionKey1Server: [number, number] = [0x55555555, 0x44444444];
   private _sessionKey2Server: [number, number] = [0x55555555, 0x44444444];
   private _encryption = false;
-  private _encrypted: NullableBuffer = null;
   private _decrypted: NullableBuffer = null;
-  private _opcode: NullableNumber = null;
 
   private login: string = '';
   public setLogin(login:string){
@@ -51,10 +49,6 @@ export class Packet {
     this._encryption = value;
   }
 
-  getEncryption() {
-    return this._encryption;
-  }
-
   getBuffer() {
     return this._decrypted;
   }
@@ -68,13 +62,11 @@ export class Packet {
   }
 
   onData(data: string) {
-    // this._encrypted = new Buffer.from(data, "binary").slice(2) // slice(2) - without first two byte responsible for packet size
-    this._encrypted = Buffer.from(data, "binary").slice(2);
-    //this._decrypted = new Buffer.from(this.getEncryption() ? this._player.xor.decrypt(this._encrypted) : this._encrypted);
-    this._decrypted = Buffer.from(this._encrypted!);
-    this._opcode = this._decrypted![0]!;
+    const _encrypted = Buffer.from(data, "binary").slice(2);
+    this._decrypted = Buffer.from(_encrypted);
+    const _opcode = this._decrypted![0]!;
 
-    switch (this._opcode) {
+    switch (_opcode) {
       case 0x00:
         new ProtocolVersion(this, this._player);
 
@@ -168,7 +160,7 @@ export class Packet {
 
         break;
       default: {
-        log('this._encrypted not found', this._encrypted, this._opcode)
+        log('this._encrypted not found', _encrypted, _opcode)
       }
     }
 
@@ -181,10 +173,10 @@ export class Packet {
   }
 
   onClose() {
-    log(`Connection to the game server is closed for: ${this._player.socket.remoteAddress}:${this._player.socket.remotePort}`);
+    log(`Connection to the game server is closed for: ${this._player.getSocket().remoteAddress}:${this._player.getSocket().remotePort}`);
   }
 
   onError() {
-    log(`Client connection lost for: ${this._player.socket.remoteAddress}:${this._player.socket.remotePort}`);
+    log(`Client connection lost for: ${this._player.getSocket().remoteAddress}:${this._player.getSocket().remotePort}`);
   }
 }

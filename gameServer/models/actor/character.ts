@@ -208,13 +208,6 @@ export class Character extends WorldObject {
     return this.maxLoad;
   }
 
-  private location: Point = new Point();
-
-  public getLocation() {
-    return {...this.location, y: this.location.y + 100};
-  }
-
-
   private _target: Character | undefined
 
   public getTarget(): Character | undefined {

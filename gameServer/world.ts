@@ -1,53 +1,44 @@
 import {Player} from "./models/actor/player";
-import {Bot} from "./Bot";
+import {Npc} from "@gameServer/models/npc";
+import {WorldObject} from "@gameServer/models/worldObject";
 
 export class World {
 
-  private _objects: any[] = []
-  private _players: Player[] = []
-  private _bots: Bot[] = []
-  private _npcList: any[] = []
+  private objects: Map<number, WorldObject> = new Map();
+  private players: Map<number, Player> = new Map();
+  private npcList: Map<number, Npc> = new Map();
 
   private static world: World;
 
   private constructor() {
   }
 
-  public static getInstance(){
-    if(!World.world){
+  public static getInstance() {
+    if (!World.world) {
       World.world = new World();
     }
     return World.world;
   }
 
   addPlayer(player: Player) {
-    this._objects.push(player);
-    this._players.push(player);
+    this.objects.set(player.getObjectId(), player);
+    this.players.set(player.getObjectId(), player);
   }
 
-  getPlayers(): Player[] {
-    return this._players
+  getPlayers(): Map<number, Player> {
+    return this.players
   }
 
-  addBot(bot: Bot) {
-    this._objects.push(bot);
-    this._bots.push(bot);
+  addNpc(npc: Npc) {
+    this.objects.set(npc.getObjectId(), npc);
+    this.npcList.set(npc.getObjectId(), npc);
   }
 
-  getBots(): Bot[] {
-    return this._bots;
+  getNpcList(): Map<number, Npc> {
+    return this.npcList;
   }
 
-  addNpc(npc: any) {
-    this._objects.push(npc);
-    this._npcList.push(npc);
-  }
-
-  getNpcList(): any[] {
-    return this._npcList;
-  }
-
-  find(objectId: number) {
-    return this._objects.find(object => object.objectId === objectId);
+  find(objectId: number): WorldObject | undefined {
+    return this.objects.get(objectId);
   }
 }

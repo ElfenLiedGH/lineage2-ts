@@ -19,16 +19,48 @@ import {AutoAttackStart} from "@gameServer/network/serverPackets/autoAttackStart
 import {UserInfo} from "@gameServer/network/serverPackets/userInfo";
 import {AutoAttackStop} from "@gameServer/network/serverPackets/autoAttackStop";
 import {CharacterInfo} from "@gameServer/network/serverPackets/characterInfo";
-import {ClassTypes} from "@dataSets/generated/manual/classTypes";
+import {TaskList} from "@gameServer/task/TaskList";
+import {NpcInfo} from "@gameServer/network/serverPackets/npcInfo";
+import {Npc} from "@gameServer/models/npc";
+
+export enum PlayerTask {
+  GET_VISIBLE_OBJECTS,
+}
 
 export class Player extends Character {
 
   public xor = new XOR(base.key.XOR) || null;
 
-  public online: boolean = false;
+  private online: boolean = false;
+
+  private tasks = new TaskList<PlayerTask>()
+    .on('task', (task: PlayerTask) => {
+      this[task]();
+    })
+
+  private [PlayerTask.GET_VISIBLE_OBJECTS]() {
+    this.getVisibleObjects(npc => {
+      this.sendPacket(new NpcInfo(npc));
+    })
+    this.tasks.createTask(1000, PlayerTask.GET_VISIBLE_OBJECTS.toString())
+  }
+
+  public setOnline(online: boolean) {
+    this.online = online;
+    if (online) {
+      this.tasks.createTask(1000, PlayerTask.GET_VISIBLE_OBJECTS.toString())
+    } else {
+      this.tasks.deleteTasks();
+    }
+  }
+
+  public getOnline() {
+    return this.online
+  }
+
   public onlineTime = 0;
 
-public heading = 0
+  public heading = 0
   public clanLeader = 0;
   public clanCrestId = 0;
   public allianceId = 0;
@@ -85,9 +117,14 @@ public heading = 0
   public back = {objectId: 0, itemId: 0};
   public accessLevel = 0;
 
-  constructor(public socket: Socket) {
+  public getSocket() {
+    return this.socket
+  }
+
+  constructor(private readonly socket: Socket) {
     super();
     log('new player')
+    this.tasks.createTask(1000, PlayerTask.GET_VISIBLE_OBJECTS.toString())
 
   }
 
@@ -103,9 +140,7 @@ public heading = 0
       return;
     }
     const objectId = target.getObjectId();
-    // TODO ts
-    // @ts-ignore
-    console.log(`Я ${this.name} бью ${objectId}`)
+    console.log(`Я ${this.getName()} бью ${objectId}`)
     // console.log(`Я ${this.name} бью ${objectId} ${target.hp}`)
     let attacks = {
       soulshot: false,
@@ -132,7 +167,8 @@ public heading = 0
 
       setTimeout(() => {
         this.startCombat()
-      }, 500000 / this.getPSpeed())
+      }, 3000)
+      // }, 500000 / this.getPSpeed())
 
       // setTimeout(() => {
       //     target.attack();
@@ -211,17 +247,13 @@ public heading = 0
     const buffer = packet.getBuffer();
     packetLength.writeInt16LE(buffer.length + 2);
 
-    for (let i = 0; i < players.length; i++) {
-      if (players[i].online && players[i].socket !== this.socket) {
-        //let packetCopy = new Buffer.from(packet);
-        //let packetEncrypted = new Buffer.from(players[i].xor.encrypt(packetCopy));
-
-        //packetEncrypted = Buffer.concat([packetLength, packetEncrypted]);
+    players.forEach(player => {
+      if (player.getOnline() && player.getSocket() !== this.getSocket()) {
         const socketBuffer = Buffer.concat([packetLength, buffer]); // for test
         //players[i].socket.write(packetEncrypted);
-        players[i].socket.write(socketBuffer); // for test
+        player.getSocket().write(socketBuffer); // for test
       }
-    }
+    })
   }
 
   getWaitType() {
@@ -278,33 +310,42 @@ public heading = 0
     }, 0);
   }
 
-  getVisiblePlayers(players: Player[], callback: Function) {
+  // private taskGetVisibleObjects() {
+  //   console.log('taskGetVisibleObjects')
+  //   this.tasks.createTask(2000, () => {
+  //     this.getVisibleObjects(World.getInstance().getNpcList(), npc => {
+  //       this.sendPacket(new NpcInfo(npc));
+  //     })
+  //   })
+  // }
+
+  // getVisiblePlayers(players: Player[], callback: Function) {
+  //   let radius = 2000;
+  //
+  //   for (let i = 0; i < players.length; i++) {
+  //     if (players[i].socket !== this.socket) {
+  //       // TODO ts
+  //       // @ts-ignore
+  //       if (players[i].online && this._checkPointInCircle(this.location.x, this.location.y, players[i].location.x, players[i].location.y, radius)) {
+  //         // TODO ts
+  //         // @ts-ignore
+  //         console.log(`I am ${this.name}, I see  ${players[i].name}`)
+  //         callback(players[i]);
+  //       }
+  //     }
+  //   }
+  // }
+
+  getVisibleObjects(callback: (npc: Npc) => void) {
     let radius = 2000;
-
-    for (let i = 0; i < players.length; i++) {
-      if (players[i].socket !== this.socket) {
-        // TODO ts
-        // @ts-ignore
-        if (players[i].online && this._checkPointInCircle(this.location.x, this.location.y, players[i].location.x, players[i].location.y, radius)) {
-          // TODO ts
-          // @ts-ignore
-          console.log(`I am ${this.name}, I see  ${players[i].name}`)
-          callback(players[i]);
-        }
+    const npcs = World.getInstance().getNpcList();
+    const playerLocation = this.getLocation();
+    npcs.forEach(npc => {
+      const npcLocation = npc.getLocation();
+      if (this._checkPointInCircle(playerLocation.x, playerLocation.y, npcLocation.x, npcLocation.y, radius)) {
+        callback(npc);
       }
-    }
-  }
-
-  getVisibleObjects(objects: Player[], callback: Function) {
-    let radius = 2000;
-
-    for (let i = 0; i < objects.length; i++) {
-      // TODO ts
-      // @ts-ignore
-      if (this._checkPointInCircle(this.location.x, this.location.y, (objects[i] as any).x, (objects[i] as any).y, radius)) {
-        callback(objects[i]);
-      }
-    }
+    })
   }
 
   getSkill(id: number) {

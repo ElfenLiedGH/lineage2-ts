@@ -1,6 +1,5 @@
 import {DefaultLoader} from "../defaultLoader";
 import {ClassGenerator} from "../classGenerator";
-import isNumber from "lodash/isNumber";
 
 const filePath = 'PcParameters/pc_collision_box.pcparams'
 
